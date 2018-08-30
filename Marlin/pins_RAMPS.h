@@ -52,6 +52,8 @@
   #define BOARD_NAME "RAMPS 1.4"
 #endif
 
+#define LARGE_FLASH true
+
 //
 // Servos
 //
@@ -75,7 +77,7 @@
 #endif
 #define Y_MIN_PIN          14
 #define Y_MAX_PIN          15
-#define Z_MIN_PIN          18
+#define Z_MIN_PIN          12 // FIXME Emotion hack, default was 18
 #define Z_MAX_PIN          19
 
 //
@@ -239,15 +241,21 @@
 
 #if ENABLED(IS_RAMPS_EFB)                      // Hotend, Fan, Bed
   #define HEATER_BED_PIN   RAMPS_D8_PIN
+  #define FAN_PIN          RAMPS_D9_PIN
 #elif ENABLED(IS_RAMPS_EEF)                    // Hotend, Hotend, Fan
   #define HEATER_1_PIN     RAMPS_D9_PIN
+  #define FAN_PIN          RAMPS_D8_PIN
 #elif ENABLED(IS_RAMPS_EEB)                    // Hotend, Hotend, Bed
   #define HEATER_1_PIN     RAMPS_D9_PIN
   #define HEATER_BED_PIN   RAMPS_D8_PIN
 #elif ENABLED(IS_RAMPS_EFF)                    // Hotend, Fan, Fan
   #define FAN1_PIN         RAMPS_D8_PIN
-#elif DISABLED(IS_RAMPS_SF)                    // Not Spindle, Fan (i.e., "EFBF" or "EFBE")
-  #define HEATER_BED_PIN   RAMPS_D8_PIN
+  #define FAN_PIN          RAMPS_D9_PIN
+#elif ENABLED(IS_RAMPS_SF)                     // Spindle, Fan
+  #define FAN_PIN        RAMPS_D8_PIN
+#else                                          // Non-specific are "EFB" (i.e., "EFBF" or "EFBE")
+  #define FAN_PIN        RAMPS_D9_PIN
+  #define HEATER_BED_PIN RAMPS_D8_PIN
   #if HOTENDS == 1
     #define FAN1_PIN       MOSFET_D_PIN
   #else
@@ -256,15 +264,7 @@
 #endif
 
 #ifndef FAN_PIN
-  #if ENABLED(IS_RAMPS_EFB) || ENABLED(IS_RAMPS_EFF)  // Hotend, Fan, Bed or Hotend, Fan, Fan
-    #define FAN_PIN        RAMPS_D9_PIN
-  #elif ENABLED(IS_RAMPS_EEF) || ENABLED(IS_RAMPS_SF) // Hotend, Hotend, Fan or Spindle, Fan
-    #define FAN_PIN        RAMPS_D8_PIN
-  #elif ENABLED(IS_RAMPS_EEB)                         // Hotend, Hotend, Bed
-    #define FAN_PIN         4   // IO pin. Buffer needed
-  #else                                               // Non-specific are "EFB" (i.e., "EFBF" or "EFBE")
-    #define FAN_PIN        RAMPS_D9_PIN
-  #endif
+  #define FAN_PIN 4      // IO pin. Buffer needed
 #endif
 
 //
@@ -282,9 +282,7 @@
   #define FIL_RUNOUT_PIN    4
 #endif
 
-#ifndef PS_ON_PIN
-  #define PS_ON_PIN        12
-#endif
+#define PS_ON_PIN          -1 // FIXME Emotion hack, default was 12
 
 #if ENABLED(CASE_LIGHT_ENABLE) && !defined(CASE_LIGHT_PIN) && !defined(SPINDLE_LASER_ENABLE_PIN)
   #if NUM_SERVOS <= 1 // try to use servo connector first
@@ -480,6 +478,7 @@
       #define BEEPER_PIN        23
       #define LCD_BACKLIGHT_PIN 33
 
+    #elif ENABLED(ELB_FULL_GRAPHIC_CONTROLLER)
       #define BTN_EN1           35
       #define BTN_EN2           37
       #define BTN_ENC           31
@@ -526,11 +525,11 @@
       //#define LCD_SCREEN_ROT_90
       //#define LCD_SCREEN_ROT_180
       //#define LCD_SCREEN_ROT_270
-
+      // The encoder and click button
       #define BTN_EN1           40
       #define BTN_EN2           63
       #define BTN_ENC           59
-
+      // not connected to a pin
       #define SD_DETECT_PIN     49
       #define KILL_PIN          64
 
